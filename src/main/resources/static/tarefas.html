@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD de Tarefas</title>
+    <script>
+        // Função para criar ou atualizar uma tarefa
+        async function salvarTarefa(event) {
+            event.preventDefault();
+
+            const formData = new FormData(document.querySelector('#formTarefa'));
+            const id = formData.get('id');
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? /api/tasks/${id} : '/api/tasks';
+
+            const response = await fetch(url, {
+                method: method,
+                body: new URLSearchParams(formData)
+            });
+
+            if (response.ok) {
+                alert('Tarefa salva com sucesso!');
+                listarTarefas();  // Atualiza a lista de tarefas
+            } else {
+                alert('Erro ao salvar tarefa.');
+            }
+        }
+
+        // Função para listar as tarefas
+        async function listarTarefas() {
+            const response = await fetch('/api/tasks');
+            const tarefas = await response.json();
+            const lista = document.querySelector('#listaTarefas');
+            lista.innerHTML = '';  // Limpa a lista antes de popular
+
+            tarefas.forEach(tarefa => {
+                const item = document.createElement('li');
+                item.innerHTML = `
+                    <strong>${tarefa.title}</strong> - ${tarefa.description} 
+                    <br>
+                    <small>Início: ${tarefa.startAt} - Fim: ${tarefa.endAt} - Prioridade: ${tarefa.priority}</small>
+                    <br>
+                    <button onclick="editarTarefa(${tarefa.id})">Editar</button>
+                    <button onclick="deletarTarefa(${tarefa.id})">Excluir</button>
+                    <hr>
+                `;
+                lista.appendChild(item);
+            });
+        }
+
+        // Função para editar uma tarefa
+        async function editarTarefa(id) {
+            const response = await fetch(/api/tasks/${id});
+            const tarefa = await response.json();
+
+            document.querySelector('#id').value = tarefa.id;
+            document.querySelector('#title').value = tarefa.title;
+            document.querySelector('#description').value = tarefa.description;
+            document.querySelector('#startAt').value = tarefa.startAt;
+            document.querySelector('#endAt').value = tarefa.endAt;
+            document.querySelector('#priority').value = tarefa.priority;
+        }
+
+        // Função para excluir uma tarefa
+        async function deletarTarefa(id) {
+            if (confirm('Tem certeza que deseja excluir esta tarefa?')) {
+                const response = await fetch(/api/tasks/${id}, {
+                    method: 'DELETE',
+                });
+
+                if (response.ok) {
+                    alert('Tarefa excluída!');
+                    listarTarefas();  // Atualiza a lista
+                } else {
+                    alert('Erro ao excluir tarefa.');
+                }
+            }
+        }
+
+        // Carrega as tarefas ao carregar a página
+        window.onload = function() {
+            listarTarefas();
+        }
+    </script>
+</head>
+<body>
+    <h1>CRUD de Tarefas</h1>
+
+    <form id="formTarefa" onsubmit="salvarTarefa(event)">
+        <input type="hidden" name="id" id="id">
+        
+        <label for="title">Título:</label>
+        <input type="text" id="title" name="title" required><br><br>
+
+        <label for="description">Descrição:</label>
+        <input type="text" id="description" name="description" required><br><br>
+
+        <label for="startAt">Início:</label>
+        <input type="datetime-local" id="startAt" name="startAt" required><br><br>
+
+        <label for="endAt">Fim:</label>
+        <input type="datetime-local" id="endAt" name="endAt" required><br><br>
+
+        <label for="priority">Prioridade:</label>
+        <select id="priority" name="priority" required>
+            <option value="BAIXA">Baixa</option>
+            <option value="MÉDIA">Média</option>
+            <option value="ALTA">Alta</option>
+        </select><br><br>
+
+        <button type="submit">Salvar Tarefa</button>
+    </form>
+
+    <h2>Lista de Tarefas</h2>
+    <ul id="listaTarefas">
+        <!-- Tarefas serão listadas aqui -->
+    </ul>
+</body>
+</html>
