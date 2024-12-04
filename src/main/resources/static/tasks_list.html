@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tarefas</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+    <script>
+        async function fetchTasks() {
+            try {
+                const response = await fetch('/tasks/', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    alert('Erro ao buscar as tarefas. Código: ' + response.status);
+                    return;
+                }
+
+                const tasks = await response.json();
+                const tasksTable = document.getElementById('tasksTable');
+
+                tasksTable.innerHTML = `
+                    <tr>
+                        <th>Título</th>
+                        <th>Descrição</th>
+                        <th>Prioridade</th>
+                        <th>Data de Início</th>
+                        <th>Data de Término</th>
+                    </tr>
+                `;
+
+                tasks.forEach(task => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${task.title}</td>
+                        <td>${task.description}</td>
+                        <td>${task.priority}</td>
+                        <td>${new Date(task.startAt).toLocaleString()}</td>
+                        <td>${new Date(task.endAt).toLocaleString()}</td>
+                    `;
+                    tasksTable.appendChild(row);
+                });
+            } catch (error) {
+                alert('Erro ao conectar ao servidor: ' + error.message);
+            }
+        }
+        window.onload = fetchTasks;
+    </script>
+</head>
+<body>
+    <h1>Lista de Tarefas</h1>
+    <table id="tasksTable">
+    </table>
+</body>
+</html>

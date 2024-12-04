@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Tarefa - TodoList</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            max-width: 400px;
+            margin: auto;
+        }
+        label, input, button, select {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cadastrar Nova Tarefa</h1>
+    <form id="taskForm">
+        <label for="title">Título da Tarefa:</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="description">Descrição:</label>
+        <input type="text" id="description" name="description">
+
+        <label for="startAt">Data de Início:</label>
+        <input type="datetime-local" id="startAt" name="startAt" required>
+
+        <label for="endAt">Data de Término:</label>
+        <input type="datetime-local" id="endAt" name="endAt" required>
+
+        <label for="priority">Prioridade:</label>
+        <select id="priority" name="priority" required>
+            <option value="LOW">Baixa</option>
+            <option value="MEDIUM">Média</option>
+            <option value="HIGH">Alta</option>
+        </select>
+
+        <button type="submit">Cadastrar</button>
+    </form>
+
+    <div id="responseMessage" style="margin-top: 20px; color: green;"></div>
+
+    <script>
+        const form = document.getElementById('taskForm');
+        const responseMessage = document.getElementById('responseMessage');
+
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault(); 
+
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const startAt = document.getElementById('startAt').value;
+            const endAt = document.getElementById('endAt').value;
+            const priority = document.getElementById('priority').value;
+
+            try {
+                const response = await fetch('http://localhost:8080/tasks/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title,
+                        description,
+                        startAt,
+                        endAt,
+                        priority
+                    }),
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    responseMessage.textContent = `Tarefa "${result.title}" cadastrada com sucesso!`;
+                    form.reset();
+                } else {
+                    const error = await response.text();
+                    responseMessage.textContent = `Erro: ${error}`;
+                    responseMessage.style.color = 'red';
+                }
+            } catch (err) {
+                responseMessage.textContent = `Erro: ${err.message}`;
+                responseMessage.style.color = 'red';
+            }
+        });
+    </script>
+</body>
+</html>
